@@ -16,15 +16,5 @@ model Task {
   completed   Boolean  @default(false)
   createdAt   DateTime @default(now())
  
-  // Relacionamento com Categoria
-  categoryId  Int?
-  category    Category? @relation(fields: [categoryId], references: [id])
 }
-
-model Category {
-  id    Int    @id @default(autoincrement())
-  name  String
-  tasks Task[]
-}
-
 
