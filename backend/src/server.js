@@ -1,14 +1,11 @@
 import app from "./app.js";
-import { prisma } from "./config/prisma.js";
+import { prisma, verifyConnection } from "./config/prisma.js";
 
 const PORT = process.env.PORT || 3000;
 
 async function main() {
-  try {
-    await prisma.$connect();
-    console.log("Conexão bem-sucedida com o banco de dados!");
-  } catch (error) {
-    console.error("Erro ao conectar ao banco de dados:", error);
+  const isConnected = await verifyConnection();
+  if (!isConnected) {
     process.exit(1);
   }
 }

@@ -1,72 +1,137 @@
-import prisma from "../config/prisma.js";
+import * as TaskModel from "../models/taskModel.js";
 
-// GET
 export async function listarTasks(req, res) {
   try {
-    const tasks = await prisma.task.findMany({
-      include: { category: true }
-    });
-
-    res.json(tasks);
+    const tasks = await TaskModel.listar();
+    return res.json(tasks);
   } catch (error) {
-    res.status(500).json({ erro: "Erro ao buscar tarefas" });
+    console.error("Erro ao listar tarefas:", error);
+    return res.status(500).json({ erro: "Erro ao buscar tarefas" });
   }
 }
 
-// POST
+export async function buscarTaskPorId(req, res) {
+  try {
+    const id = Number(req.params.id);
+    if (Number.isNaN(id)) {
+      return res.status(400).json({ erro: "ID inválido" });
+    }
+
+    const task = await TaskModel.buscarPorId(id);
+    if (!task) {
+      return res.status(404).json({ erro: "Tarefa não encontrada" });
+    }
+
+    return res.json(task);
+  } catch (error) {
+    console.error("Erro ao buscar tarefa por ID:", error);
+    return res.status(500).json({ erro: "Erro ao buscar tarefa" });
+  }
+}
+
 export async function criarTask(req, res) {
   try {
-    const { title, description, categoryId } = req.body;
+    const { title, description, completed, categoryId } = req.body;
 
-    const task = await prisma.task.create({
-      data: {
-        title,
-        description,
-        categoryId
-      }
+    if (typeof title !== "string" || title.trim() === "") {
+      return res.status(400).json({ erro: "Título é obrigatório" });
+    }
+
+    if (description !== undefined && typeof description !== "string") {
+      return res.status(400).json({ erro: "Descrição deve ser uma string" });
+    }
+
+    if (completed !== undefined && typeof completed !== "boolean") {
+      return res.status(400).json({ erro: "Completed deve ser boolean" });
+    }
+
+    if (categoryId !== undefined && Number.isNaN(Number(categoryId))) {
+      return res.status(400).json({ erro: "categoryId deve ser um número" });
+    }
+
+    const task = await TaskModel.criar({
+      title: title.trim(),
+      description: description?.trim(),
+      completed,
+      categoryId: categoryId !== undefined ? Number(categoryId) : undefined
     });
 
-    res.json(task);
+    return res.status(201).json(task);
   } catch (error) {
-    res.status(500).json({ erro: "Erro ao criar tarefa" });
+    console.error("Erro ao criar tarefa:", error);
+    return res.status(500).json({ erro: "Erro ao criar tarefa" });
   }
 }
 
-// PUT/PATCH
 export async function atualizarTask(req, res) {
   try {
     const id = Number(req.params.id);
-
     if (Number.isNaN(id)) {
       return res.status(400).json({ erro: "ID inválido" });
     }
 
-    const task = await prisma.task.update({
-      where: { id },
-      data: req.body
-    });
+    const { title, description, completed, categoryId } = req.body;
+    const data = {};
 
-    res.json(task);
+    if (title !== undefined) {
+      if (typeof title !== "string" || title.trim() === "") {
+        return res.status(400).json({ erro: "Título inválido" });
+      }
+      data.title = title.trim();
+    }
+
+    if (description !== undefined) {
+      if (typeof description !== "string") {
+        return res.status(400).json({ erro: "Descrição inválida" });
+      }
+      data.description = description.trim();
+    }
+
+    if (completed !== undefined) {
+      if (typeof completed !== "boolean") {
+        return res.status(400).json({ erro: "Completed deve ser boolean" });
+      }
+      data.completed = completed;
+    }
+
+    if (categoryId !== undefined) {
+      if (Number.isNaN(Number(categoryId))) {
+        return res.status(400).json({ erro: "categoryId deve ser um número" });
+      }
+      data.categoryId = Number(categoryId);
+    }
+
+    if (Object.keys(data).length === 0) {
+      return res.status(400).json({ erro: "Nenhum campo para atualizar" });
+    }
+
+    const task = await TaskModel.atualizar(id, data);
+    if (!task) {
+      return res.status(404).json({ erro: "Tarefa não encontrada" });
+    }
+
+    return res.json(task);
   } catch (error) {
-    res.status(500).json({ erro: "Erro ao atualizar tarefa" });
+    console.error("Erro ao atualizar tarefa:", error);
+    return res.status(500).json({ erro: "Erro ao atualizar tarefa" });
   }
 }
 
-// DELETE
 export async function deletarTask(req, res) {
   try {
     const id = Number(req.params.id);
-
     if (Number.isNaN(id)) {
       return res.status(400).json({ erro: "ID inválido" });
     }
 
-    await prisma.task.delete({
-      where: { id }
-    });
+    const task = await TaskModel.excluir(id);
+    if (!task) {
+      return res.status(404).json({ erro: "Tarefa não encontrada" });
+    }
 
-    res.json({ mensagem: "Task deletada" });
+    return res.json({ mensagem: "Tarefa excluída com sucesso", task });
   } catch (error) {
-    res.status(500).json({ erro: "Erro ao deletar tarefa" });
+    console.error("Erro ao excluir tarefa:", error);
+    return res.status(500).json({ erro: "Erro ao excluir tarefa" });
   }
 }
