@@ -30,4 +30,4 @@ dist/
 build/
 /src/generated/prisma
 
-/generated/prisma
+/generated
