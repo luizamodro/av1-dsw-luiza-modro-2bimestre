@@ -1,4 +1,4 @@
-import prisma from "../config/prisma.js";
+import { prisma } from "../config/prisma.js";
 
 // GET
 export async function listarTasks(req, res) {
