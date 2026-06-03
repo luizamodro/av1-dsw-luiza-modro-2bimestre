@@ -1,4 +1,5 @@
 import { prisma } from "../config/prisma.js";
+import * as TaskModel from "../models/taskModel.js";
 
 export async function listarTasks(req, res) {
   try {

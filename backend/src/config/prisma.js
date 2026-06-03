@@ -1,6 +1,17 @@
 import "dotenv/config";
-import { PrismaClient } from "../../generated/prisma/index.js";
+import { PrismaClient } from "@prisma/client";
 
 const prisma = new PrismaClient();
 
-export { prisma };
+async function verifyConnection() {
+  try {
+    await prisma.$connect();
+    console.log("Conexão bem-sucedida com o banco de dados!");
+    return true;
+  } catch (error) {
+    console.error("Erro ao conectar ao banco de dados:", error);
+    return false;
+  }
+}
+
+export { prisma, verifyConnection };
