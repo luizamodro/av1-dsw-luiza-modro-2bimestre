@@ -10,70 +10,91 @@ function App() {
   const [editingId, setEditingId] = useState(null)
   const [editingTask, setEditingTask] = useState(null)
 
+  /**
+   * Ao criar uma nova tarefa
+   */
   const handleTaskCreate = async (data) => {
     try {
       await taskService.criarTask(data)
-      setRefreshKey(prev => prev + 1) // Refresh lista
-      alert('✅ Tarefa criada com sucesso!')
+      // Refresh da lista
+      setRefreshKey(prev => prev + 1)
     } catch (error) {
+      console.error('Erro ao criar tarefa:', error)
       throw error
     }
   }
 
+  /**
+   * Ao atualizar uma tarefa
+   */
   const handleTaskUpdate = async (data) => {
     try {
       await taskService.atualizarTask(editingId, data)
+      // Limpar modo edição
       setEditingId(null)
       setEditingTask(null)
-      setRefreshKey(prev => prev + 1) // Refresh lista
-      alert('✅ Tarefa atualizada com sucesso!')
+      // Refresh da lista
+      setRefreshKey(prev => prev + 1)
     } catch (error) {
+      console.error('Erro ao atualizar tarefa:', error)
       throw error
     }
   }
 
+  /**
+   * Ao clicar em editar uma tarefa na lista
+   */
+  const handleEditClick = (taskId, taskData) => {
+    setEditingId(taskId)
+    setEditingTask(taskData)
+    // Scroll para o formulário
+    window.scrollTo({ top: 0, behavior: 'smooth' })
+  }
+
+  /**
+   * Cancelar modo edição
+   */
+  const handleCancelEdit = () => {
+    setEditingId(null)
+    setEditingTask(null)
+  }
+
   return (
-    <div className="min-h-screen bg-gray-100">
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100">
       <Header />
       
       <main className="max-w-6xl mx-auto px-4 py-8">
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          {/* Formulário */}
+          {/* Coluna 1: Formulário */}
           <div className="lg:col-span-1">
-            <TaskForm 
-              onSubmit={editingId ? handleTaskUpdate : handleTaskCreate}
-              initialData={editingTask}
-              editingId={editingId}
-            />
-            {editingId && (
-              <button
-                onClick={() => {
-                  setEditingId(null)
-                  setEditingTask(null)
-                }}
-                className="w-full bg-gray-400 text-white font-semibold py-2 rounded-lg hover:bg-gray-500 transition"
-              >
-                ❌ Cancelar Edição
-              </button>
-            )}
+            <div className="sticky top-4">
+              <TaskForm 
+                onSubmit={editingId ? handleTaskUpdate : handleTaskCreate}
+                initialData={editingTask}
+                editingId={editingId}
+              />
+            </div>
           </div>
 
-          {/* Lista de Tarefas */}
+          {/* Coluna 2: Lista de Tarefas */}
           <div className="lg:col-span-2">
             <TaskList 
               key={refreshKey}
-              onEditClick={(taskId, taskData) => {
-                setEditingId(taskId)
-                setEditingTask(taskData)
-                window.scrollTo(0, 0)
-              }}
+              refreshKey={refreshKey}
+              onEditClick={handleEditClick}
             />
           </div>
         </div>
       </main>
 
-      <footer className="bg-gray-800 text-gray-300 text-center py-4 mt-12">
-        <p>Desenvolvido com React + Tailwind CSS | API Backend em Node.js + Express</p>
+      {/* Footer */}
+      <footer className="bg-gray-800 text-gray-300 text-center py-6 mt-16">
+        <p className="text-sm">
+          🚀 Desenvolvido com React + Tailwind CSS
+        </p>
+        <p className="text-xs mt-1 text-gray-400">
+          Backend: Node.js + Express + Prisma + MySQL
+        </p>
       </footer>
     </div>
   )

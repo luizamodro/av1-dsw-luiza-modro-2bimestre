@@ -9,7 +9,6 @@
 
 import express from "express";
 import tarefaRoutes from "./routes/tarefaRoutes.js";
-import taskRoutes from "./routes/taskRoutes.js";
 
 // Cria a aplicação Express
 const app = express();
@@ -52,7 +51,6 @@ app.get("/", (req, res) => {
 
 // Registra as rotas de tarefas
 app.use(tarefaRoutes);
-app.use(taskRoutes);
 
 // ========================================
 // TRATAMENTO DE ROTAS NÃO ENCONTRADAS
